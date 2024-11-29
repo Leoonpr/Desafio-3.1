@@ -1,0 +1,14 @@
+C:\dev\CursoC#\ConsultorioOdontologico\ConsultorioOdontologico\bin\Debug\net8.0\ConsultorioOdontologico.exe
+C:\dev\CursoC#\ConsultorioOdontologico\ConsultorioOdontologico\bin\Debug\net8.0\ConsultorioOdontologico.deps.json
+C:\dev\CursoC#\ConsultorioOdontologico\ConsultorioOdontologico\bin\Debug\net8.0\ConsultorioOdontologico.runtimeconfig.json
+C:\dev\CursoC#\ConsultorioOdontologico\ConsultorioOdontologico\bin\Debug\net8.0\ConsultorioOdontologico.dll
+C:\dev\CursoC#\ConsultorioOdontologico\ConsultorioOdontologico\bin\Debug\net8.0\ConsultorioOdontologico.pdb
+C:\dev\CursoC#\ConsultorioOdontologico\ConsultorioOdontologico\obj\Debug\net8.0\ConsultorioOdontologico.GeneratedMSBuildEditorConfig.editorconfig
+C:\dev\CursoC#\ConsultorioOdontologico\ConsultorioOdontologico\obj\Debug\net8.0\ConsultorioOdontologico.AssemblyInfoInputs.cache
+C:\dev\CursoC#\ConsultorioOdontologico\ConsultorioOdontologico\obj\Debug\net8.0\ConsultorioOdontologico.AssemblyInfo.cs
+C:\dev\CursoC#\ConsultorioOdontologico\ConsultorioOdontologico\obj\Debug\net8.0\ConsultorioOdontologico.csproj.CoreCompileInputs.cache
+C:\dev\CursoC#\ConsultorioOdontologico\ConsultorioOdontologico\obj\Debug\net8.0\ConsultorioOdontologico.dll
+C:\dev\CursoC#\ConsultorioOdontologico\ConsultorioOdontologico\obj\Debug\net8.0\refint\ConsultorioOdontologico.dll
+C:\dev\CursoC#\ConsultorioOdontologico\ConsultorioOdontologico\obj\Debug\net8.0\ConsultorioOdontologico.pdb
+C:\dev\CursoC#\ConsultorioOdontologico\ConsultorioOdontologico\obj\Debug\net8.0\ConsultorioOdontologico.genruntimeconfig.cache
+C:\dev\CursoC#\ConsultorioOdontologico\ConsultorioOdontologico\obj\Debug\net8.0\ref\ConsultorioOdontologico.dll
