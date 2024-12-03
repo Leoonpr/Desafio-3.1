@@ -271,12 +271,54 @@ static async Task ListarConsultas(Agenda agenda)
 {
     Console.Clear();
     Console.WriteLine("===== LISTA DE CONSULTAS =====");
-    var consultas = await agenda.ListarConsultas();
+    Console.Write("Apresentar agenda T-Toda ou P-Periodo (T/P): ");
+    string? opcao = Console.ReadLine()?.ToUpper();
 
-    foreach (var consulta in consultas)
+    DateTime? dataInicial = null;
+    DateTime? dataFinal = null;
+
+    if (opcao == "P")
     {
-        Console.WriteLine($"Paciente: {consulta.Paciente.Nome}, Data: {consulta.Data:dd/MM/yyyy}, " +
-                          $"Hora: {consulta.HoraInicio:hh\\:mm} - {consulta.HoraFim:hh\\:mm}");
+        Console.Write("Data inicial (ddMMyyyy): ");
+        dataInicial = LerData();
+        Console.Write("Data final (ddMMyyyy): ");
+        dataFinal = LerData();
+    }
+
+    List<Consulta> consultas;
+
+    if (dataInicial.HasValue && dataFinal.HasValue)
+    {
+        consultas = await agenda.ListarConsultasPorPeriodo(dataInicial.Value, dataFinal.Value);
+    }
+    else
+    {
+        consultas = await agenda.ListarConsultas();
+    }
+
+    if (consultas.Count == 0)
+    {
+        Console.WriteLine("Nenhuma consulta encontrada.");
+    }
+    else
+    {
+        Console.WriteLine("-------------------------------------------------------------");
+        Console.WriteLine("Data       H.Ini  H.Fim  Tempo   Nome                    Dt.Nasc.");
+        Console.WriteLine("-------------------------------------------------------------");
+
+        foreach (var consulta in consultas)
+        {
+            string data = consulta.Data.ToString("dd/MM/yyyy");
+            string horaInicio = consulta.HoraInicio.ToString(@"hh\:mm");
+            string horaFim = consulta.HoraFim.ToString(@"hh\:mm");
+            TimeSpan duracao = consulta.HoraFim - consulta.HoraInicio;
+            string tempo = $"{(int)duracao.TotalHours:D2}:{duracao.Minutes:D2}";
+            string nome = consulta.Paciente.Nome.PadRight(24);
+            string dataNascimento = consulta.Paciente.DataNascimento.ToString("dd/MM/yyyy");
+
+            Console.WriteLine($"{data} {horaInicio} {horaFim} {tempo} {nome} {dataNascimento}");
+        }
+        Console.WriteLine("-------------------------------------------------------------");
     }
 
     Console.WriteLine("Pressione qualquer tecla para continuar.");
@@ -287,9 +329,7 @@ static TimeSpan LerHora()
 {
     while (true)
     {
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-                string entrada = Console.ReadLine();
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                string? entrada = Console.ReadLine();
                 if (TimeSpan.TryParse(entrada, out var hora))
         {
             return hora;
@@ -312,15 +352,44 @@ static async Task ListarPacientes(Agenda agenda, bool ordenarPorNome)
     }
     else
     {
+        Console.WriteLine("------------------------------------------------------------");
+        Console.WriteLine("CPF         Nome                                Dt.Nasc.   Idade");
+        Console.WriteLine("------------------------------------------------------------");
+
         foreach (var paciente in pacientes)
         {
-            Console.WriteLine($"Nome: {paciente.Nome}, CPF: {paciente.CPF}, Data de Nascimento: {paciente.DataNascimento:dd/MM/yyyy}");
+            // Exibir informações do paciente
+            string cpf = paciente.CPF.PadRight(12);
+            string nome = paciente.Nome.PadRight(40);
+            string dataNascimento = paciente.DataNascimento.ToString("dd/MM/yyyy");
+            int idade = DateTime.UtcNow.Year - paciente.DataNascimento.Year;
+            if (DateTime.UtcNow < paciente.DataNascimento.AddYears(idade)) idade--;
+
+            Console.WriteLine($"{cpf} {nome} {dataNascimento} {idade:D3}");
+
+            // Verificar e exibir agendamentos futuros
+            var consultasFuturas = await agenda.ListarConsultasFuturas(paciente);
+            if (consultasFuturas.Count > 0)
+            {
+                foreach (var consulta in consultasFuturas)
+                {
+                    string dataConsulta = consulta.Data.ToString("dd/MM/yyyy");
+                    string horaInicio = consulta.HoraInicio.ToString(@"hh\:mm");
+                    string horaFim = consulta.HoraFim.ToString(@"hh\:mm");
+
+                    Console.WriteLine($"  Agendado para: {dataConsulta}");
+                    Console.WriteLine($"  {horaInicio} às {horaFim}");
+                }
+            }
+
+            Console.WriteLine("------------------------------------------------------------");
         }
     }
 
     Console.WriteLine("Pressione qualquer tecla para continuar.");
     Console.ReadKey();
 }
+
 
 static async Task ExcluirPaciente(Agenda agenda)
 {
