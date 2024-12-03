@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "9i8U0RxVNLs=",
+  "dgSpecHash": "dTKle13nEUw=",
   "success": true,
-  "projectFilePath": "C:\\dev\\CursoC#\\ConsultorioOdontologico\\ConsultorioOdontologico\\ConsultorioOdontologico.csproj",
+  "projectFilePath": "C:\\dev\\CursoC#\\Course\\ConsultorioOdontologico\\Desafio-3.1\\ConsultorioOdontologico\\ConsultorioOdontologico.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\rocha\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\rocha\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\7.0.0\\microsoft.bcl.asyncinterfaces.7.0.0.nupkg.sha512",

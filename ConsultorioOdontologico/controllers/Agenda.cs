@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace ConsultorioOdontologico
 {
-   class Agenda
+    public class Agenda
     {
-        private List<Paciente> pacientes = new List<Paciente>();
-        private List<Consulta> consultas = new List<Consulta>();
-
-         private readonly ConsultorioContext _context;
+        private readonly ConsultorioContext _context;
 
         public Agenda(ConsultorioContext context)
         {
@@ -42,15 +34,18 @@ namespace ConsultorioOdontologico
             if (paciente == null)
                 return StatusCode.PacienteNaoEncontrado;
 
-            bool temConsultasFuturas = await _context.Consultas.AnyAsync(c => c.Paciente.CPF == cpf && c.Data >= DateTime.Today);
+            var hojeUtc = DateTime.UtcNow.Date;
+            bool temConsultasFuturas = await _context.Consultas.AnyAsync(c => c.Paciente.CPF == cpf && c.Data >= hojeUtc);
+
             if (temConsultasFuturas)
                 return StatusCode.PacienteComConsultaFutura;
 
             _context.Pacientes.Remove(paciente);
+
             var consultasDoPaciente = await _context.Consultas.Where(c => c.Paciente.CPF == cpf).ToListAsync();
             _context.Consultas.RemoveRange(consultasDoPaciente);
-            await _context.SaveChangesAsync();
 
+            await _context.SaveChangesAsync();
             return StatusCode.Sucesso;
         }
 
@@ -66,14 +61,14 @@ namespace ConsultorioOdontologico
             if (horaInicio < new TimeSpan(8, 0, 0) || horaFim > new TimeSpan(19, 0, 0))
                 return StatusCode.ForaDoHorarioFuncionamento;
 
-            bool jaAgendado = await _context.Consultas.AnyAsync(c => c.Paciente.CPF == cpf && c.Data >= DateTime.Today);
-            if (jaAgendado)
-                return StatusCode.ConsultaJaAgendada;
+            var consultasDoDia = await _context.Consultas
+                .Where(c => c.Data == data)
+                .ToListAsync();
+
+            if (consultasDoDia.Any(c => c.HoraInicio < horaFim && c.HoraFim > horaInicio))
+                return StatusCode.HorarioIndisponivel;
 
             var novaConsulta = new Consulta(paciente, data, horaInicio, horaFim);
-            bool horarioConflitante = await _context.Consultas.AnyAsync(c => c.VerificarConflito(novaConsulta));
-            if (horarioConflitante)
-                return StatusCode.HorarioIndisponivel;
 
             await _context.Consultas.AddAsync(novaConsulta);
             await _context.SaveChangesAsync();
@@ -81,16 +76,17 @@ namespace ConsultorioOdontologico
             return StatusCode.Sucesso;
         }
 
-        public async Task<StatusCode>  CancelarConsulta(string cpf, DateTime data, TimeSpan horaInicio)
+        public async Task<StatusCode> CancelarConsulta(string cpf, DateTime data, TimeSpan horaInicio)
         {
- var consulta = await _context.Consultas
+            var consulta = await _context.Consultas
                 .Include(c => c.Paciente)
                 .FirstOrDefaultAsync(c => c.Paciente.CPF == cpf && c.Data == data && c.HoraInicio == horaInicio);
 
             if (consulta == null)
                 return StatusCode.AgendamentoNaoEncontrado;
 
-            if (consulta.Data < DateTime.Today || (consulta.Data == DateTime.Today && consulta.HoraInicio < DateTime.Now.TimeOfDay))
+            var agoraUtc = DateTime.UtcNow;
+            if (consulta.Data < agoraUtc.Date || (consulta.Data == agoraUtc.Date && consulta.HoraInicio < agoraUtc.TimeOfDay))
                 return StatusCode.HorarioIndisponivel;
 
             _context.Consultas.Remove(consulta);
@@ -99,34 +95,40 @@ namespace ConsultorioOdontologico
             return StatusCode.Sucesso;
         }
 
-     public async Task<List<Paciente>> ListarPacientesPorNome()
+        public async Task<List<Paciente>> ListarPacientesPorNome()
         {
             return await _context.Pacientes.OrderBy(p => p.Nome).ToListAsync();
-        }        
-         public async Task<List<Paciente>> ListarPacientesPorCPF()
+        }
+
+        public async Task<List<Paciente>> ListarPacientesPorCPF()
         {
             return await _context.Pacientes.OrderBy(p => p.CPF).ToListAsync();
         }
 
         public async Task<List<Consulta>> ListarAgenda(DateTime? dataInicial = null, DateTime? dataFinal = null)
         {
-           var consultasQuery = _context.Consultas
+            var consultasQuery = _context.Consultas
                 .Include(c => c.Paciente)
                 .OrderBy(c => c.Data)
                 .ThenBy(c => c.HoraInicio)
                 .AsQueryable();
 
             if (dataInicial.HasValue && dataFinal.HasValue)
-                consultasQuery = consultasQuery.Where(c => c.Data >= dataInicial.Value && c.Data <= dataFinal.Value);
+            {
+                var dataInicialUtc = dataInicial.Value.ToUniversalTime();
+                var dataFinalUtc = dataFinal.Value.ToUniversalTime();
+                consultasQuery = consultasQuery.Where(c => c.Data >= dataInicialUtc && c.Data <= dataFinalUtc);
+            }
 
             return await consultasQuery.ToListAsync();
         }
 
         public async Task<List<Consulta>> ListarConsultasFuturas(Paciente paciente)
         {
+            var agoraUtc = DateTime.UtcNow;
             return await _context.Consultas
                 .Where(c => c.Paciente.CPF == paciente.CPF &&
-                            (c.Data > DateTime.Today || (c.Data == DateTime.Today && c.HoraInicio > DateTime.Now.TimeOfDay)))
+                            (c.Data > agoraUtc.Date || (c.Data == agoraUtc.Date && c.HoraInicio > agoraUtc.TimeOfDay)))
                 .OrderBy(c => c.Data)
                 .ThenBy(c => c.HoraInicio)
                 .ToListAsync();
@@ -134,9 +136,12 @@ namespace ConsultorioOdontologico
 
         public async Task<List<Consulta>> ListarConsultasPorPeriodo(DateTime dataInicial, DateTime dataFinal)
         {
+            var dataInicialUtc = dataInicial.ToUniversalTime();
+            var dataFinalUtc = dataFinal.ToUniversalTime();
+
             return await _context.Consultas
                 .Include(c => c.Paciente)
-                .Where(c => c.Data >= dataInicial && c.Data <= dataFinal)
+                .Where(c => c.Data >= dataInicialUtc && c.Data <= dataFinalUtc)
                 .OrderBy(c => c.Data)
                 .ThenBy(c => c.HoraInicio)
                 .ToListAsync();
@@ -144,12 +149,10 @@ namespace ConsultorioOdontologico
 
         public async Task<List<Consulta>> ListarConsultas()
         {
-            return await  _context.Consultas
+            return await _context.Consultas
                 .OrderBy(c => c.Data)
                 .ThenBy(c => c.HoraInicio)
                 .ToListAsync();
         }
-
-
     }
 }
