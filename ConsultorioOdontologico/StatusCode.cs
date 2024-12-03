@@ -20,6 +20,5 @@ namespace ConsultorioOdontologico
         PacienteComConsultaFutura,
         ForaDoHorarioFuncionamento,
         HorarioInvalido,
-        HorarioIncorreto
-    }
+        HorarioIncorreto    }
 }

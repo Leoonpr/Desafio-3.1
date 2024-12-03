@@ -32,7 +32,7 @@ namespace ConsultorioOdontologico
                 Console.WriteLine("2 - Agenda");
                 Console.WriteLine("3 - Sair");
                 Console.Write("Escolha uma opção: ");
-                string opcao = Console.ReadLine();
+                string? opcao = Console.ReadLine();
 
                 switch (opcao)
                 {
@@ -68,7 +68,7 @@ namespace ConsultorioOdontologico
                 Console.WriteLine("4 - Listar pacientes por Nome");
                 Console.WriteLine("5 - Voltar ao menu principal");
                 Console.Write("Escolha uma opção: ");
-                string opcao = Console.ReadLine();
+                string? opcao = Console.ReadLine();
 
                 switch (opcao)
                 {
@@ -100,9 +100,16 @@ namespace ConsultorioOdontologico
             Console.Clear();
             Console.WriteLine("===== CADASTRO DE PACIENTE =====");
             Console.Write("Nome: ");
-            string nome = Console.ReadLine();
+            string? nome = Console.ReadLine();
             Console.Write("CPF: ");
-            string cpf = Console.ReadLine();
+            string? cpf = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(nome) || string.IsNullOrWhiteSpace(cpf))
+            {
+                Console.WriteLine("Erro: Nome ou CPF inválidos.");
+                Console.WriteLine("Pressione qualquer tecla para continuar.");
+                Console.ReadKey();
+                return;
+            }
             Console.Write("Data de Nascimento (ddMMyyyy): ");
             DateTime dataNascimento = LerData();
 
@@ -118,7 +125,7 @@ namespace ConsultorioOdontologico
         {
             while (true)
             {
-                string entrada = Console.ReadLine();
+                string? entrada = Console.ReadLine();
                 if (DateTime.TryParseExact(entrada, "ddMMyyyy", null, System.Globalization.DateTimeStyles.None, out var data))
                 {
                     return data;
@@ -186,7 +193,7 @@ namespace ConsultorioOdontologico
         Console.WriteLine("3 - Listar consultas");
         Console.WriteLine("4 - Voltar ao menu principal");
         Console.Write("Escolha uma opção: ");
-        string opcao = Console.ReadLine();
+        string? opcao = Console.ReadLine();
 
         switch (opcao)
         {
@@ -215,7 +222,14 @@ static async Task AgendarConsulta(Agenda agenda)
     Console.Clear();
     Console.WriteLine("===== AGENDAR CONSULTA =====");
     Console.Write("CPF do paciente: ");
-    string cpf = Console.ReadLine();
+    string? cpf = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(cpf))
+    {
+        Console.WriteLine("Erro: CPF não pode ser nulo.");
+        Console.WriteLine("Pressione qualquer tecla para continuar.");
+        Console.ReadKey();
+        return;
+    }
     Console.Write("Data da consulta (ddMMyyyy): ");
     DateTime data = LerData();
     Console.Write("Hora de início (HH:mm): ");
@@ -234,7 +248,14 @@ static async Task CancelarConsulta(Agenda agenda)
     Console.Clear();
     Console.WriteLine("===== CANCELAR CONSULTA =====");
     Console.Write("CPF do paciente: ");
-    string cpf = Console.ReadLine();
+    string? cpf = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(cpf))
+            {
+                Console.WriteLine("Erro: CPF não pode ser nulo.");
+                Console.WriteLine("Pressione qualquer tecla para continuar.");
+                Console.ReadKey();
+                return;
+            }
     Console.Write("Data da consulta (ddMMyyyy): ");
     DateTime data = LerData();
     Console.Write("Hora de início (HH:mm): ");
@@ -306,8 +327,14 @@ static async Task ExcluirPaciente(Agenda agenda)
     Console.Clear();
     Console.WriteLine("===== EXCLUSÃO DE PACIENTE =====");
     Console.Write("CPF do paciente a ser excluído: ");
-    string cpf = Console.ReadLine();
-
+    string? cpf = Console.ReadLine();
+    if (string.IsNullOrWhiteSpace(cpf))
+    {
+        Console.WriteLine("Erro: CPF não pode ser nulo.");
+        Console.WriteLine("Pressione qualquer tecla para continuar.");
+        Console.ReadKey();
+        return;
+    }
     var status = await agenda.ExcluirPaciente(cpf);
     ExibirMensagemStatus(status);
 

@@ -10,7 +10,7 @@ namespace ConsultorioOdontologico
     {
         public int Id { get; set; }
         public int PacienteId { get;set; }
-        public Paciente Paciente { get; set; }
+        public Paciente Paciente { get; set; } = new Paciente();
         public DateTime Data { get; set; }
         public TimeSpan HoraInicio { get; set; }
         public TimeSpan HoraFim { get; set; }
